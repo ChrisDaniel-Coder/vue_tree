@@ -1,0 +1,95 @@
+body {
+  font-family: Menlo, Consolas, monospace;
+  color: #444;
+}
+.item {
+  cursor: pointer;
+}
+.bold {
+  font-weight: bold;
+}
+ul {
+  padding-left: 2em;
+  line-height: 2em;
+  list-style-type: dot;
+  font-size: 20px;
+}
+.ul {
+	width: 40%;
+	height: 40%;
+	float: left;
+	margin-left: 10%;
+	margin-top: 10px;
+	/* border: 1px solid; */
+}
+
+input {
+	margin: 0 ;
+	padding: 0;
+	width: 200px;
+	height: 30px;
+	font-size: 20px;
+}
+
+label {
+	margin-left: 20%;
+	padding: 0;
+	line-height: 3;
+	font-weight: bold;
+	font-size: 20px;
+	font-family: '微软雅黑';
+}
+
+.div-top {
+	width: 100%;
+	/* border: 1px solid; */
+}
+
+.div-down {
+	width: 100%;
+	height: auto;
+	/* border: 1px solid; */
+}
+
+#search {
+	display: inline-block;
+	height: 30px;
+	width: 100px;
+	text-align: center;
+	padding: 0;
+	margin-left: 20px ;
+	font-size: 25px;
+	border: 1px solid #08aae5;
+	background: #08aae5;
+	color: #fff;
+	cursor: pointer;
+	border-radius: 3px;
+}
+.container{
+	width: 500px;
+	height: 300px;
+	/* margin-right: 300px; */
+	/* margin-top: 80px; */
+	float: left;
+	/* border: 1px solid; */
+}
+#demo {
+	width: 60%;
+	/* height: 100%; */
+	margin: auto;
+	/* text-align: center; */
+	/* border: 1px solid; */
+}
+#img {
+	width: 50%;
+	height: 100%;
+	float: left;
+	overflow: hidden;
+	/* margin: 50px 0 ; */
+	padding: 60px 0;
+	/* border: 1px solid; */
+}
+img {
+	width: 50%;
+	height: 50%;
+}

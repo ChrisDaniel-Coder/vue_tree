@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>demo-tree</title>
+    <script src="js/vue.js"></script>
+	<script type="text/javascript" src="js/echarts.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
+
+    <!-- item template -->
+	<!-- 组件tree-item的模板 -->
+    <script type="text/x-template" id="item-template">
+      <li>
+        <!--<div :class="{bold: isFolder}" @click="toggle" @dblclick="makeFolder">-->
+		<div
+		  :class="{bold: isFolder}"
+		  @click="$emit('show-chart', item)">
+          {{ item.name }}
+          <!--<span v-if="isFolder">[{{ isOpen ? '-' : '+' }}]</span>-->
+        </div>
+		<!-- vm.$emit( eventName, […args] ) ,触发当前实例上的事件。附加参数都会传给监听器回调-->
+        <ul v-show="isOpen"> <!-- v-if="isFolder" -->
+          <!-- <tree-item
+            class="item"
+            v-for="(child, index) in item.children"
+            :key="index"
+            :item="child"
+            @make-folder="$emit('make-folder', $event)"
+            @add-item="$emit('add-item', $event)"
+          ></tree-item>-->
+		  <tree-item
+		    class="item"
+		    v-for="(child, index) in item.children"
+		    :key="index"
+		    :item="child"
+			@show-chart="$emit('show-chart', $event)"
+		  ></tree-item>
+          <!-- <li class="add" @click="$emit('add-item', item)">+</li> -->
+        </ul>
+      </li>
+    </script>
+  </head>
+  <body>
+    <!-- <p>(You can double click on an item to turn it into a folder.)</p> -->
+	<div id="demo">
+		<label>请输入关键词：</label>
+		<input list="demo2" v-model="selected"/>
+		<datalist id="demo2">
+			<option v-for="option in options" :value="option">{{option}}</option>
+		</datalist>
+		<span id="search" @click="search">搜索</span>
+		<br/>
+		<div class="div-top">
+			<!-- the demo root element -->
+			<div class="ul">
+				<ul>
+				<!-- <tree-item
+					class="item"
+					:item="treeData"
+					@make-folder="makeFolder"
+					@add-item="addItem"
+				  ></tree-item> -->
+				  <tree-item
+					v-show="isPresent"
+					class="item"
+					:item="treeData"
+					@show-chart="showChart"
+				  ></tree-item>
+				</ul>
+			</div>
+			<!-- 放示意图 -->
+			<div id="img">
+				<img v-bind:src="imgSrc" alt="">
+			</div>
+		</div>
+		<div class="div-down">
+			<!-- 放echarts图表1 -->
+			<div id="container1" class="container" v-show="isShow">
+				
+			</div>
+			<!-- 放echarts图表2 -->
+			<div id="container2" class="container" v-show="isShow">
+				
+			</div>
+		</div>
+	</div>
+    <script>
+      // demo data
+      const treeDataObj = {
+		  "登机门":{
+			  name: "舱门",
+			  data: [10, 15, 16, 18, 14],
+			  num: '521A0000-000-001',
+			  children: [
+				  {
+					  name: "登机门",
+					  data: [11, 16, 17, 15, 14],
+					  children: [
+						  {name: '登机门1',data: [12, 14, 15, 19, 15]},
+						  {name: '登机门2',data: [13, 19, 12, 16, 13]},
+						  {name: '登机门3',data: [15, 18, 13, 14, 16]}
+					  ]
+				  },
+				  {name: '服务舱门',data: [17, 20, 11, 14, 13]},
+				  {name: '前货舱门',data: [18, 15, 18, 16, 17]},
+				  {name: '驾驶舱通道门',data: [19, 16, 17, 19, 15]}
+			  ]
+		  },
+		  "服务舱门":{
+			  name: "舱门",
+			  data: [10, 15, 16, 18, 14],
+			  num: '524A0000-000-001',
+			  children: [
+				  {name: '登机门',data: [11, 16, 17, 15, 14]},
+				  {
+					  name: "服务舱门",
+					  data: [17, 20, 11, 14, 13],
+					  children: [
+						  {name: '服务舱门1',data: [12, 14, 15, 19, 15]},
+						  {name: '服务舱门2',data: [13, 19, 12, 16, 13]},
+						  {name: '服务舱门3',data: [15, 18, 13, 14, 16]}
+					  ]
+				  },
+				  {name: '前货舱门',data: [18, 15, 18, 16, 17]},
+				  {name: '驾驶舱通道门',data: [19, 16, 17, 19, 15]}
+			  ]
+		  },
+		  "前货舱门":{
+			  name: "舱门",
+			  data: [10, 15, 16, 18, 14],
+			  num: '523A0000-000-001',
+			  children: [
+				  {name: '登机门',data: [11, 16, 17, 15, 14]},
+				  {name: '服务舱门',data: [17, 20, 11, 14, 13]},
+				  {
+					  name: "前货舱门",
+					  data: [18, 15, 18, 16, 17],
+					  children: [
+						  {name: '前货舱门1',data: [12, 14, 15, 19, 15]},
+						  {name: '前货舱门2',data: [13, 19, 12, 16, 13]},
+						  {name: '前货舱门3',data: [15, 18, 13, 14, 16]}
+					  ]
+				  },
+				  {name: '驾驶舱通道门',data: [19, 16, 17, 19, 15]}
+			  ]
+		  },
+		  "驾驶舱通道门":{
+			  name: "舱门",
+			  data: [10, 15, 16, 18, 14],
+			  num: '525A0000-000-001',
+			  children: [
+				  {name: '登机门',data: [11, 16, 17, 15, 14]},
+				  {name: '服务舱门',data: [17, 20, 11, 14, 13]},
+				  {name: '前货舱门',data: [18, 15, 18, 16, 17]},
+				  {
+					  name: "驾驶舱通道门",
+					  data: [19, 16, 17, 19, 15],
+					  children: [
+						  {name: '驾驶舱通道门1',data: [12, 14, 15, 19, 15]},
+						  {name: '驾驶舱通道门2',data: [13, 19, 12, 16, 13]},
+						  {name: '驾驶舱通道门3',data: [15, 18, 13, 14, 16]}
+					  ]
+				  },
+			  ]
+		  },
+      };
+	  
+	  const options = ['登机门','服务舱门','前货舱门','驾驶舱通道门'];
+
+      // 定义组件 tree-item
+      Vue.component("tree-item", {
+        template: "#item-template",
+        props: {
+          item: Object
+        },
+        data: function() {
+          return {
+            isOpen: true
+          };
+        },
+        computed: {
+          isFolder: function() {
+            return this.item.children && this.item.children.length;
+          }
+        },
+        methods: {
+          toggle: function() {
+            if (this.isFolder) {
+              this.isOpen = !this.isOpen;
+            }
+          },
+          // makeFolder: function() {
+          //   if (!this.isFolder) {
+          //     this.$emit("make-folder", this.item);
+          //     this.isOpen = true;
+          //   }
+          // }
+        }
+      });
+	  let option1 = {
+	  		  title: {
+	  		          text: '问题数变化-时间'
+	  		  },
+	  		  legend: {
+	  			  data: ['问题数']
+	  		  },
+	  		  xAxis: {
+	  			  type: 'category',
+	  			  boundaryGap: false,
+	  			  data: [2016, 2017, 2018, 2019, 2020]
+	  		  },
+	  		  yAxis: {
+	  		          type: 'value'
+	  		  },
+	  		  series: [
+	  			  {
+	  				  type: 'line',
+	  				  name: '问题数',
+	  				  data: [10,15,11,12,13]
+	  			  }
+	  		  ]
+	  },
+		  option2 ={
+		  title: {
+				  text: '问题数变化-架次'
+		  },
+		  legend: {
+			  data: ['问题数']
+		  },
+		  xAxis: {
+			  type: 'category',
+			  boundaryGap: false,
+			  data: ['105-110', '110-120', '120-130', '130-140', '140-150']
+		  },
+		  yAxis: {
+				  type: 'value'
+		  },
+		  series: [
+			  {
+				  type: 'line',
+				  name: '问题数',
+				  data: [15,9,20,18,10]
+			  }
+		  ]
+	  };
+      // boot up the demo
+      var demo = new Vue({
+        el: "#demo",
+        data: {
+		  treeDataObj: treeDataObj,
+          treeData: {},
+		  options: options,
+		  isPresent: false,
+		  selected: '',
+		  isShow: false,
+		  option1: option1,
+		  option2: option2,
+		  myChart1:'',
+		  myChart2:'',
+		  imgSrc: ''
+        }, 
+		mounted() {
+			this.init_charts();
+		},
+        methods: {
+			search: function(){
+				if (this.selected != "") {
+					this.treeData = this.treeDataObj[this.selected];
+					this.isPresent = true;
+					this.imgSrc = "img/" + this.treeDataObj[this.selected].num + ".jpg";
+					this.isShow = false;
+				}
+				else{
+					this.isPresent = false;
+					this.isShow = false;
+					this.imgSrc = "";
+					alert('未输入');
+				}
+			},
+			showChart: function(item){
+				this.option1.series[0].data = item.data;
+				this.option2.series[0].data = item.data;
+				if (this.isShow != true){
+					this.update_charts();
+					this.isShow = true;
+				}
+				else {
+					this.update_charts();
+				}
+			},
+			init_charts: function(){
+				this.myChart1 = echarts.init(document.getElementById("container1"));
+				this.myChart2 = echarts.init(document.getElementById("container2"));
+				this.myChart1.setOption(this.option1);
+				this.myChart2.setOption(this.option2);
+			},
+			update_charts: function(){
+				// let myChart1 = echarts.init(document.getElementById("container1")),
+				// 	myChart2 = echarts.init(document.getElementById("container2"));
+				this.myChart1.setOption(this.option1);
+				this.myChart2.setOption(this.option2);
+			}
+   //        makeFolder: function(item) {
+			// // Vue.set( target, propertyName/index, value )
+   //          Vue.set(item, "children", []);
+   //          this.addItem(item);
+   //        },
+          // addItem: function(item) {
+          //   item.children.push({
+          //     name: "new stuff"
+          //   });
+          // }
+        }
+      });
+    </script>
+  </body>
+</html>
+
